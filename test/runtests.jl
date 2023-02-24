@@ -1,6 +1,7 @@
 using PsychometricTests
 using Test
+using Tables
 
 @testset "PsychometricTests.jl" begin
-    # Write your tests here.
+    include("test.jl")
 end
