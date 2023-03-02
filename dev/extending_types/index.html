@@ -17,9 +17,9 @@ PsychometricTests.getitemid(response::TimedResponse) = response.item_id
 PsychometricTests.getpersonid(response::TimedResponse) = response.person_id</code></pre><p>Additionally we want to be able to get the response time for a given response, so we define a custom <code>response_time</code> function. </p><pre><code class="language-julia hljs">response_time(response::TimedResponse) = response.end_time - response.start_time</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">response_time (generic function with 1 method)</code></pre><p>This concludes the type definition section of this example. Next, we will move on to constructing the psychometric test.</p><h2 id="Constructing-the-test"><a class="docs-heading-anchor" href="#Constructing-the-test">Constructing the test</a><a id="Constructing-the-test-1"></a><a class="docs-heading-anchor-permalink" href="#Constructing-the-test" title="Permalink"></a></h2><p>To construct a psychometric test from our custom structs we need some items, persons, and  responses. In this example we will simply use randomly generated data. </p><p>For items we just need some <a href="../api/#PsychometricTests.BasicItem"><code>BasicItem</code></a>,</p><pre><code class="language-julia hljs">items = [BasicItem(i) for i in 1:2]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">2-element Vector{BasicItem{Int64}}:
  BasicItem{Int64}(1)
  BasicItem{Int64}(2)</code></pre><p>Persons need some <code>anger</code> score in addition to a unique id, </p><pre><code class="language-julia hljs">persons = [AngryPerson(p, rand(0:20)) for p in 1:3]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">3-element Vector{Main.var&quot;Main&quot;.AngryPerson{Int64}}:
- Main.var&quot;Main&quot;.AngryPerson{Int64}(1, 12)
- Main.var&quot;Main&quot;.AngryPerson{Int64}(2, 19)
- Main.var&quot;Main&quot;.AngryPerson{Int64}(3, 18)</code></pre><p>Similarly, the <code>TimedResponse</code> for the test will have some randomly generated  timings, </p><pre><code class="language-julia hljs">responses = TimedResponse{Int,Int,Int}[]
+ Main.var&quot;Main&quot;.AngryPerson{Int64}(1, 15)
+ Main.var&quot;Main&quot;.AngryPerson{Int64}(2, 18)
+ Main.var&quot;Main&quot;.AngryPerson{Int64}(3, 6)</code></pre><p>Similarly, the <code>TimedResponse</code> for the test will have some randomly generated  timings, </p><pre><code class="language-julia hljs">responses = TimedResponse{Int,Int,Int}[]
 
 for i in 1:2, p in 1:3
     start_time = now()
@@ -29,19 +29,19 @@ for i in 1:2, p in 1:3
 end
 
 responses</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">6-element Vector{Main.var&quot;Main&quot;.TimedResponse{Int64, Int64, Int64}}:
- Main.var&quot;Main&quot;.TimedResponse{Int64, Int64, Int64}(1, 1, 1, Dates.DateTime(&quot;2023-03-01T12:26:27.932&quot;), Dates.DateTime(&quot;2023-03-01T12:32:01.932&quot;))
- Main.var&quot;Main&quot;.TimedResponse{Int64, Int64, Int64}(1, 2, 0, Dates.DateTime(&quot;2023-03-01T12:26:27.938&quot;), Dates.DateTime(&quot;2023-03-01T12:34:38.938&quot;))
- Main.var&quot;Main&quot;.TimedResponse{Int64, Int64, Int64}(1, 3, 1, Dates.DateTime(&quot;2023-03-01T12:26:27.938&quot;), Dates.DateTime(&quot;2023-03-01T12:33:57.938&quot;))
- Main.var&quot;Main&quot;.TimedResponse{Int64, Int64, Int64}(2, 1, 1, Dates.DateTime(&quot;2023-03-01T12:26:27.938&quot;), Dates.DateTime(&quot;2023-03-01T12:34:28.938&quot;))
- Main.var&quot;Main&quot;.TimedResponse{Int64, Int64, Int64}(2, 2, 0, Dates.DateTime(&quot;2023-03-01T12:26:27.938&quot;), Dates.DateTime(&quot;2023-03-01T12:27:28.938&quot;))
- Main.var&quot;Main&quot;.TimedResponse{Int64, Int64, Int64}(2, 3, 0, Dates.DateTime(&quot;2023-03-01T12:26:27.938&quot;), Dates.DateTime(&quot;2023-03-01T12:32:57.938&quot;))</code></pre><p>The last step is to finally construct the psychometric test.</p><pre><code class="language-julia hljs">timed_test = PsychometricTest(items, persons, responses)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">A PsychometricTest with 6 Main.var&quot;Main&quot;.TimedResponse{Int64, Int64, Int64} from 3 Main.var&quot;Main&quot;.AngryPerson{Int64} and 2 BasicItem{Int64}
+ Main.var&quot;Main&quot;.TimedResponse{Int64, Int64, Int64}(1, 1, 0, Dates.DateTime(&quot;2023-03-02T08:48:04.800&quot;), Dates.DateTime(&quot;2023-03-02T08:55:28.800&quot;))
+ Main.var&quot;Main&quot;.TimedResponse{Int64, Int64, Int64}(1, 2, 1, Dates.DateTime(&quot;2023-03-02T08:48:04.806&quot;), Dates.DateTime(&quot;2023-03-02T08:51:21.806&quot;))
+ Main.var&quot;Main&quot;.TimedResponse{Int64, Int64, Int64}(1, 3, 0, Dates.DateTime(&quot;2023-03-02T08:48:04.806&quot;), Dates.DateTime(&quot;2023-03-02T08:57:41.806&quot;))
+ Main.var&quot;Main&quot;.TimedResponse{Int64, Int64, Int64}(2, 1, 0, Dates.DateTime(&quot;2023-03-02T08:48:04.806&quot;), Dates.DateTime(&quot;2023-03-02T08:56:53.806&quot;))
+ Main.var&quot;Main&quot;.TimedResponse{Int64, Int64, Int64}(2, 2, 1, Dates.DateTime(&quot;2023-03-02T08:48:04.806&quot;), Dates.DateTime(&quot;2023-03-02T08:56:16.806&quot;))
+ Main.var&quot;Main&quot;.TimedResponse{Int64, Int64, Int64}(2, 3, 1, Dates.DateTime(&quot;2023-03-02T08:48:04.806&quot;), Dates.DateTime(&quot;2023-03-02T08:57:54.806&quot;))</code></pre><p>The last step is to finally construct the psychometric test.</p><pre><code class="language-julia hljs">timed_test = PsychometricTest(items, persons, responses)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">A PsychometricTest with 6 Main.var&quot;Main&quot;.TimedResponse{Int64, Int64, Int64} from 3 Main.var&quot;Main&quot;.AngryPerson{Int64} and 2 BasicItem{Int64}
 </code></pre><p>The <code>timed_test</code> is subject to our usual analyses, such as calculating scores.</p><pre><code class="language-julia hljs">personscores(timed_test)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">3-element Vector{Int64}:
- 2
  0
+ 2
  1</code></pre><p>Additionally we can efficiently query the custom fields, e.g.</p><pre><code class="language-julia hljs">response_times = [response_time(r) for r in eachresponse(timed_test)]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">6-element Vector{Dates.Millisecond}:
- 334000 milliseconds
- 491000 milliseconds
- 450000 milliseconds
- 481000 milliseconds
- 61000 milliseconds
- 390000 milliseconds</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../">« Home</a><a class="docs-footer-nextpage" href="../api/">API »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.24 on <span class="colophon-date" title="Wednesday 1 March 2023 12:26">Wednesday 1 March 2023</span>. Using Julia version 1.8.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+ 444000 milliseconds
+ 197000 milliseconds
+ 577000 milliseconds
+ 529000 milliseconds
+ 492000 milliseconds
+ 590000 milliseconds</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../">« Home</a><a class="docs-footer-nextpage" href="../api/">API »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.24 on <span class="colophon-date" title="Thursday 2 March 2023 08:48">Thursday 2 March 2023</span>. Using Julia version 1.8.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
