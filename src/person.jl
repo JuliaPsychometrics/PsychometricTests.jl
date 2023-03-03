@@ -14,7 +14,7 @@ abstract type Person end
 
 Get the unique person identifier of `person`.
 """
-function getid(person::Person) end
+getid(person::Person) = person.id
 
 """
     BasicPerson{I} <: Person
@@ -25,5 +25,3 @@ Contains no information besides a unique `id` of type `I`.
 struct BasicPerson{I} <: Person
     id::I
 end
-
-getid(person::BasicPerson) = person.id

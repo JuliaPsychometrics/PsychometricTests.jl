@@ -15,21 +15,21 @@ abstract type Response end
 
 Get the response value of `response`.
 """
-function getvalue(response::Response) end
+getvalue(response::Response) = response.value
 
 """
     getitemid(response::Response)
 
 Get the unique item id of `response`.
 """
-function getitemid(response::Response) end
+getitemid(response::Response) = response.item_id
 
 """
     getpersonid(response::Response)
 
 get the unique person id of `response`.
 """
-function getpersonid(response::Response) end
+getpersonid(response::Response) = response.person_id
 
 """
     BasicResponse{IIT,PIT,T}
@@ -42,7 +42,3 @@ struct BasicResponse{IIT,PIT,T} <: Response
     person_id::PIT
     value::T
 end
-
-getvalue(response::BasicResponse) = response.value
-getitemid(response::BasicResponse) = response.item_id
-getpersonid(response::BasicResponse) = response.person_id

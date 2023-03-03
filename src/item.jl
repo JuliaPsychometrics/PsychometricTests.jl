@@ -14,7 +14,7 @@ abstract type Item end
 
 Get the unique item identifier of `item`.
 """
-function getid(item::Item) end
+getid(item::Item) = item.id
 
 """
     BasicItem{I} <: Item
@@ -25,5 +25,3 @@ Contains no information besides a unique `id` of type `I`.
 struct BasicItem{I} <: Item
     id::I
 end
-
-getid(item::BasicItem) = item.id
