@@ -27,12 +27,9 @@ struct AngryPerson{T} <: Person
 end
 ```
 
-To satisfy the [`Person`](@ref) interface, we also need to implement a [`getid`](@ref) function
-for our newly defined `AngryPerson`.
-
-```@example extending-types
-PsychometricTests.getid(person::AngryPerson) = person.id
-```
+The [`Person`](@ref) interface requires a [`getid`](@ref) method for all implementations.
+The default method accesses the `id` field of the struct. 
+Since the unique person identifier is stored in the `id` field of `AngryPerson`, no further implementations are required.
 
 ## Adding response times
 The second step in this example is to add response times to [`BasicResponse`](@ref). Similarly to
@@ -54,12 +51,8 @@ end
 
 The interface for [`Response`](@ref) requires implemtation of [`getvalue`](@ref), 
 [`getitemid`](@ref), and [`getpersonid`](@ref). 
-
-```@example extending-types
-PsychometricTests.getvalue(response::TimedResponse) = response.value
-PsychometricTests.getitemid(response::TimedResponse) = response.item_id
-PsychometricTests.getpersonid(response::TimedResponse) = response.person_id
-```
+The default methods access the `value`, `item_id` and `person_id` of the struct respectively.
+Just as before, no further interface implementations are necessary in this case.
 
 Additionally we want to be able to get the response time for a given response, so we define
 a custom `response_time` function. 
@@ -81,7 +74,7 @@ For items we just need some [`BasicItem`](@ref),
 items = [BasicItem(i) for i in 1:2]
 ```
 
-Persons need some `anger` score in addition to a unique id, 
+Persons have some `anger` score (0 - 20) in addition to a unique id, 
 
 ```@example extending-types
 persons = [AngryPerson(p, rand(0:20)) for p in 1:3]

@@ -5,9 +5,9 @@
 [![Build Status](https://github.com/p-gw/PsychometricTests.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/p-gw/PsychometricTests.jl/actions/workflows/CI.yml?query=branch%3Amain)
 [![Coverage](https://codecov.io/gh/p-gw/PsychometricTests.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/p-gw/PsychometricTests.jl)
 
-PsychometricTests.jl provides data structures for psychometric testing in Julia.
+PsychometricTests.jl provides efficient data structures for psychometric testing in Julia.
 It serves as an entry point to the [JuliaPsychometrics](https://github.com/JuliaPsychometrics)
-ecosystem of packages.
+ecosystem of packages. 
 
 ## Installation
 To install this package simply use Julias package management system
