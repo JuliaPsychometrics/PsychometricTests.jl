@@ -5,8 +5,11 @@ using Tables
 
 import Base: getindex
 
-export PsychometricTest,
-    getitems, getpersons, getresponses, eachitem, eachperson, eachresponse
+export PsychometricTest
+export getitems, getpersons, getresponses
+export eachitem, eachperson, eachresponse
+export nitems, npersons, nresponses
+
 export Response, BasicResponse, getvalue, getitemid, getpersonid
 export Person, BasicPerson
 export Item, BasicItem
