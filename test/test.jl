@@ -1,4 +1,16 @@
 @testset "PsychometricTest" begin
+    @test_throws ArgumentError PsychometricTest(
+        fill(BasicItem(1), 2),
+        [BasicPerson(1)],
+        [BasicResponse(1, 1, 1)],
+    )
+
+    @test_throws ArgumentError PsychometricTest(
+        [BasicItem(1)],
+        fill(BasicPerson(1), 2),
+        [BasicResponse(1, 1, 1)],
+    )
+
     data = [
         0 1
         1 1

@@ -16,6 +16,8 @@
     @test_throws KeyError personscore(test, 1)
     @test personscore(test, :a) == 1
     @test personscores(test) == [1, 2]
+    @test personmean(test, :a) == 0.5
+    @test personmeans(test) == [0.5, 1]
 
     @test_throws KeyError itemscore(test, 2)
     @test itemscore(test, :item1) == 1
