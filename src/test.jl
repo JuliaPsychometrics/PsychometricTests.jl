@@ -100,7 +100,7 @@ function PsychometricTest(
         getid(person) => findall(x -> x == getid(person), person_ids) for person in persons
     )
 
-    return PsychometricTest(items, persons, responses, item_ptr, person_ptr, nothing)
+    return PsychometricTest(items, persons, responses, item_ptr, person_ptr, missing)
 end
 
 """
@@ -358,6 +358,131 @@ Get the number of responses in `test`.
 nresponses(test::PsychometricTest) = length(getresponses(test))
 
 """
+    additems!(test::PsychometricTest, items::AbstractVector{<:Item})
+    additems!(test::PsychometricTest, items::Item)
+
+Add one or multiple new items to `test`.
+"""
+function additems!(test::PsychometricTest, items::AbstractVector{<:Item})
+    item_ids = getid.(getitems(test))
+    new_item_ids = getid.(items)
+
+    duplicate_items = [id ∈ item_ids for id in new_item_ids]
+    if any(duplicate_items)
+        duplicate_ids = new_item_ids[duplicate_items]
+        throw(ArgumentError("Item(s) with id already exists: $(duplicate_ids)"))
+    end
+
+    return append!(test.items, items)
+end
+
+additems!(test::PsychometricTest, items::Item) = additems!(test, [items])
+
+"""
+    addpersons!(test::PsychometricTest, persons::AbstractVector{<:Person})
+    addpersons!(test::PsychometricTest, persons::Person)
+
+Add one or multiple new persons to `test`.
+"""
+function addpersons!(test::PsychometricTest, persons::AbstractVector{<:Person})
+    person_ids = getid.(getpersons(test))
+    new_person_ids = getid.(persons)
+
+    duplicate_persons = [id in person_ids for id in new_person_ids]
+    if any(duplicate_persons)
+        duplicate_ids = new_person_ids[duplicate_persons]
+        throw(ArgumentError("Person(s) with id already exists: $(duplicate_ids)"))
+    end
+
+    return append!(test.persons, persons)
+end
+
+addpersons!(test::PsychometricTest, persons::Person) = addpersons!(test, [persons])
+
+"""
+    addresponses!(test::PsychometricTest, responses; force = false, invalidate = true)
+"""
+function addresponses!(
+    test::PsychometricTest,
+    responses::AbstractVector{<:Response};
+    force = false,
+    invalidate = true,
+)
+    # check item ids
+    invalid_item_ids = Int[]
+    invalid_person_ids = Int[]
+    invalid_response_ids = Int[]
+
+    person_ids = getid.(test.persons)
+    item_ids = getid.(test.items)
+
+    for (i, response) in enumerate(responses)
+        if !(getitemid(response) in item_ids)
+            push!(invalid_item_ids, i)
+        end
+
+        if !(getpersonid(response) in person_ids)
+            push!(invalid_person_ids, i)
+        end
+
+        if responsealreadyexists(test, response)
+            push!(invalid_response_ids, i)
+        end
+    end
+
+    if length(invalid_item_ids) > 0
+        throw(ArgumentError("Invalid item ids: $(getitemid.(responses[invalid_item_ids]))"))
+    end
+
+    if length(invalid_person_ids) > 0
+        throw(
+            ArgumentError(
+                "Invalid person ids: $(getpersonid.(responses[invalid_person_ids]))",
+            ),
+        )
+    end
+
+    if length(invalid_response_ids) > 0
+        throw(ArgumentError("Response already exists: $(invalid_response_ids)"))
+    end
+
+    new_responses = append!(test.responses, responses)
+
+    # revalidate pointers
+    if invalidate
+        for response in responses
+            invalidate_ptr!(test.item_ptr, getitemid(response), getitemid.(new_responses))
+            invalidate_ptr!(
+                test.person_ptr,
+                getpersonid(response),
+                getpersonid.(new_responses),
+            )
+        end
+    end
+
+    return new_responses
+end
+
+function addresponses!(test::PsychometricTest, responses::Response; kwargs...)
+    return addresponses!(test, [responses]; kwargs...)
+end
+
+function invalidate_ptr!(ptr, k, ids)
+    ptr[k] = findall(x -> x == k, ids)
+    return nothing
+end
+
+function responsealreadyexists(test, response)
+    for r in eachresponse(test)
+        if (getitemid(r) == getitemid(response)) &&
+           (getpersonid(r) == getpersonid(response))
+            return true
+        end
+    end
+    return false
+end
+
+"""
     Matrix(test::PsychometricTest)
 
 Get the person by item response matrix from `test`.
@@ -379,8 +504,19 @@ true
 
 ```
 """
-function Base.Matrix(test::PsychometricTest)
-    return getvalue.(test[getid.(test.persons), getid.(test.items)])
+function Base.Matrix(test::PsychometricTest{I,P,R,IIT,PIT,ZT}) where {I,P,R,IIT,PIT,ZT}
+    response_mat = test[:, :]
+
+    out_mat = similar(response_mat, Union{ZT,fieldtype(R, :value)})
+
+    for i in eachindex(response_mat)
+        if response_mat[i] isa ZT
+            out_mat[i] = test.zeroval
+        else
+            out_mat[i] = getvalue(response_mat[i])
+        end
+    end
+    return out_mat
 end
 
 function Base.show(

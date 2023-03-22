@@ -57,6 +57,25 @@
         @test nresponses(t) == 6
     end
 
+    @testset "Setters" begin
+        t2 = PsychometricTest(data)
+        @test additems!(t2, BasicItem(3)) == [BasicItem(i) for i in 1:3]
+        @test nitems(t2) == 3
+        @test_throws ArgumentError additems!(t2, BasicItem(3))
+
+        @test additems!(t2, [BasicItem(i) for i in 4:5]) == [BasicItem(i) for i in 1:5]
+        @test nitems(t2) == 5
+        @test_throws ArgumentError additems!(t2, [BasicItem(4)])
+
+        @test addpersons!(t2, BasicPerson(4)) == [BasicPerson(p) for p in 1:4]
+        @test npersons(t2) == 4
+        @test_throws ArgumentError addpersons!(t2, BasicPerson(1))
+
+        @test addpersons!(t2, [BasicPerson(p) for p in 5:6]) == [BasicPerson(p) for p in 1:6]
+        @test npersons(t2) == 6
+        @test_throws ArgumentError addpersons!(t2, [BasicPerson(1)])
+    end
+
     @testset "Matrix" begin
         @test Matrix(t) == data
     end
