@@ -401,6 +401,14 @@ addpersons!(test::PsychometricTest, persons::Person) = addpersons!(test, [person
 
 """
     addresponses!(test::PsychometricTest, responses; force = false, invalidate = true)
+
+## Keyword arguments
+- `force`: Overwrite responses if they already exist (default: false)
+- `invalidate`: Recalculate the internal pointers for items and persons (default: true)
+
+!!! warning
+    Setting `invalidate = false` can lead to unexpected and wrong results for subsequent
+    lookups. Use at your own risk and only in conjunction with [`invalidate!`](@ref).
 """
 function addresponses!(
     test::PsychometricTest,
@@ -467,6 +475,27 @@ function addresponses!(test::PsychometricTest, responses::Response; kwargs...)
     return addresponses!(test, [responses]; kwargs...)
 end
 
+"""
+    invalidate!(test::PsychometricTest)
+
+Invalidate and recalculate the pointers for items and persons in `test`.
+"""
+function invalidate!(test::PsychometricTest)
+    responses = getresponses(test)
+    item_ids = getitemid.(responses)
+    person_ids = getpersonid.(responses)
+
+    for item in eachitem(test)
+        invalidate_ptr!(test.item_ptr, getid(item), item_ids)
+    end
+
+    for person in eachperson(test)
+        invalidate_ptr!(test.person_ptr, getid(person), person_ids)
+    end
+
+    return nothing
+end
+
 function invalidate_ptr!(ptr, k, ids)
     ptr[k] = findall(x -> x == k, ids)
     return nothing
@@ -505,19 +534,23 @@ true
 ```
 """
 function Base.Matrix(test::PsychometricTest{I,P,R,IIT,PIT,ZT}) where {I,P,R,IIT,PIT,ZT}
-    response_mat = test[:, :]
+    response_matrix = test[:, :]
 
-    out_mat = similar(response_mat, Union{ZT,fieldtype(R, :value)})
+    response_type = fieldtype(R, :value)
+    output_type = haszeros(test) ? Union{ZT,response_type} : response_type
+    output_matrix = similar(response_matrix, output_type)
 
-    for i in eachindex(response_mat)
-        if response_mat[i] isa ZT
-            out_mat[i] = test.zeroval
+    for i in eachindex(response_matrix)
+        if response_matrix[i] isa ZT
+            output_matrix[i] = test.zeroval
         else
-            out_mat[i] = getvalue(response_mat[i])
+            output_matrix[i] = getvalue(response_matrix[i])
         end
     end
-    return out_mat
+    return output_matrix
 end
+
+haszeros(test::PsychometricTest) = any(test[:, :] .=== test.zeroval)
 
 function Base.show(
     io::IO,
