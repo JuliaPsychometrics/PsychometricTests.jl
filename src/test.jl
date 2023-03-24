@@ -407,8 +407,9 @@ addpersons!(test::PsychometricTest, persons::Person) = addpersons!(test, [person
 - `invalidate`: Recalculate the internal pointers for items and persons (default: true)
 
 !!! warning
-    Setting `invalidate = false` can lead to unexpected and wrong results for subsequent
-    lookups. Use at your own risk and only in conjunction with [`invalidate!`](@ref).
+    Setting `invalidate = false` will lead to undefined behaviour of subsequent lookups.
+    Use this setting only at your own risk and in conjunction with manual invalidation.
+    See also [`invalidate!`](@ref).
 """
 function addresponses!(
     test::PsychometricTest,
@@ -451,28 +452,35 @@ function addresponses!(
     end
 
     if length(invalid_response_ids) > 0
-        throw(ArgumentError("Response already exists: $(invalid_response_ids)"))
+        if force
+            # delete duplicate responses
+            # new responses will be reinserted with non-duplicates
+            deleteat!(test.responses, invalid_response_ids)
+        else
+            throw(ArgumentError("Response already exists: $(invalid_response_ids)"))
+        end
     end
 
     new_responses = append!(test.responses, responses)
 
-    # revalidate pointers
-    if invalidate
-        for response in responses
-            invalidate_ptr!(test.item_ptr, getitemid(response), getitemid.(new_responses))
-            invalidate_ptr!(
-                test.person_ptr,
-                getpersonid(response),
-                getpersonid.(new_responses),
-            )
-        end
-    end
+    invalidate && invalidate!(test)
 
     return new_responses
 end
 
 function addresponses!(test::PsychometricTest, responses::Response; kwargs...)
     return addresponses!(test, [responses]; kwargs...)
+end
+
+function responsealreadyexists(test, response)
+    for r in eachresponse(test)
+        itemid_equal = getitemid(r) == getitemid(response)
+        personid_equal = getpersonid(r) == getpersonid(response)
+        if itemid_equal && personid_equal
+            return true
+        end
+    end
+    return false
 end
 
 """
@@ -486,29 +494,21 @@ function invalidate!(test::PsychometricTest)
     person_ids = getpersonid.(responses)
 
     for item in eachitem(test)
-        invalidate_ptr!(test.item_ptr, getid(item), item_ids)
+        invalidate_ptr!(test.item_ptr, getid(item), item_ids, person_ids)
     end
 
     for person in eachperson(test)
-        invalidate_ptr!(test.person_ptr, getid(person), person_ids)
+        invalidate_ptr!(test.person_ptr, getid(person), person_ids, item_ids)
     end
 
     return nothing
 end
 
-function invalidate_ptr!(ptr, k, ids)
-    ptr[k] = findall(x -> x == k, ids)
+function invalidate_ptr!(ptr, k, ids, order)
+    response_ids = findall(x -> x == k, ids)
+    sort_order = sortperm(order[response_ids])
+    ptr[k] = response_ids[sort_order]
     return nothing
-end
-
-function responsealreadyexists(test, response)
-    for r in eachresponse(test)
-        if (getitemid(r) == getitemid(response)) &&
-           (getpersonid(r) == getpersonid(response))
-            return true
-        end
-    end
-    return false
 end
 
 """

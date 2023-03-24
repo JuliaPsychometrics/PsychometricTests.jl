@@ -111,6 +111,16 @@
         invalidate!(t2)
         @test t2.person_ptr == t.person_ptr
         @test t2.item_ptr == t2.item_ptr
+
+        # overwrite responses
+        t = PsychometricTest(data)
+        addresponses!(t, BasicResponse(1, 1, 1), force = true)
+        @test length(getresponses(t)) == length(data)
+
+        # make sure ordering is preserved
+        @test t[1, :] == [BasicResponse(1, 1, 1), BasicResponse(2, 1, 1)]
+        @test t[:, 1] ==
+              [BasicResponse(1, 1, 1), BasicResponse(1, 2, 1), BasicResponse(1, 3, 1)]
     end
 
     @testset "Matrix" begin
