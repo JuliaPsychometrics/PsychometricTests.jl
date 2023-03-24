@@ -10,10 +10,11 @@ It serves as an entry point to the [JuliaPsychometrics](https://github.com/Julia
 ecosystem of packages. 
 
 ## Installation
-To install this package simply use Julias package management system
+Currently this package is not registered in the General registry.
+You can install it from GitHub via
 
 ```julia
-] add PsychometricTests
+] add https://github.com/JuliaPsychometrics/PsychometricTests.jl.git
 ```
 
 ## Getting started
