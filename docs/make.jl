@@ -11,11 +11,11 @@ DocMeta.setdocmeta!(
 makedocs(;
     modules = [PsychometricTests],
     authors = "Philipp Gewessler",
-    repo = "https://github.com/p-gw/PsychometricTests.jl/blob/{commit}{path}#{line}",
+    repo = "https://github.com/JuliaPsychometrics/PsychometricTests.jl/blob/{commit}{path}#{line}",
     sitename = "PsychometricTests.jl",
     format = Documenter.HTML(;
         prettyurls = get(ENV, "CI", "false") == "true",
-        canonical = "https://p-gw.github.io/PsychometricTests.jl",
+        canonical = "https://JuliaPsychometrics.github.io/PsychometricTests.jl",
         edit_link = "main",
         assets = String[],
     ),
@@ -26,4 +26,7 @@ makedocs(;
     ],
 )
 
-deploydocs(; repo = "github.com/p-gw/PsychometricTests.jl", devbranch = "main")
+deploydocs(;
+    repo = "github.com/JuliaPsychometrics/PsychometricTests.jl",
+    devbranch = "main",
+)
