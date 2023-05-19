@@ -3,6 +3,7 @@ module PsychometricTests
 using Accessors
 using StatsBase
 using Tables
+using ThreadsX
 
 import Base: getindex, split
 
