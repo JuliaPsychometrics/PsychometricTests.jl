@@ -9,4 +9,5 @@ using StatsBase
     include("response.jl")
     include("test.jl")
     include("descriptives.jl")
+    include("split.jl")
 end

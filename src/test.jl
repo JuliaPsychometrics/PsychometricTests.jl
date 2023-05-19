@@ -6,7 +6,7 @@ A struct representing a psychometric test.
 ## Fields
 - `items`: A vector of unique items.
 - `persons`: A vector of unique persons.
-- `responses`: A vector of responsese.
+- `responses`: A vector of responses.
 - `item_ptr`: A dictionary of key-value-pairs mapping the unique item identifier to responses.
 - `person_ptr`: A dictionary of key-value-pairs mapping the unique person identifier to responses.
 - `zeroval`: The zero value for the responses in matrix form (see Details).
@@ -28,31 +28,43 @@ responses for both items and persons.
     Otherwise an `ArgumentError` is thrown.
 
 """
-struct PsychometricTest{I<:Item,P<:Person,R<:Response,IIT,PIT,ZT}
-    items::Vector{I}
-    persons::Vector{P}
-    responses::Vector{R}
+struct PsychometricTest{
+    Ti<:AbstractVector{<:Item},
+    Tp<:AbstractVector{<:Person},
+    Tr<:AbstractVector{<:Response},
+    Tiid,
+    Tpid,
+    Tz,
+}
+    items::Ti
+    persons::Tp
+    responses::Tr
     # internals
-    item_ptr::Dict{IIT,Vector{Int}}
-    person_ptr::Dict{PIT,Vector{Int}}
-    zeroval::ZT
+    item_ptr::Dict{Tiid,Vector{Int}}
+    person_ptr::Dict{Tpid,Vector{Int}}
+    zeroval::Tz
     function PsychometricTest(
-        items::Vector{I},
-        persons::Vector{P},
-        responses::Vector{R},
-        item_ptr::Dict{IIT,Vector{Int}},
-        person_ptr::Dict{PIT,Vector{Int}},
-        zeroval::ZT,
-    ) where {I,P,R,IIT,PIT,ZT}
-        if !allunique(getid.(items))
-            throw(ArgumentError("PsychometricTest requires all item ids to be unique"))
+        items::Ti,
+        persons::Tp,
+        responses::Tr,
+        item_ptr::Dict{Tiid,Vector{Int}},
+        person_ptr::Dict{Tpid,Vector{Int}},
+        zeroval::Tz;
+        check_args = false,
+    ) where {Ti,Tp,Tr,Tiid,Tpid,Tz}
+        if check_args
+            if !allunique(getid.(items))
+                throw(ArgumentError("PsychometricTest requires all item ids to be unique"))
+            end
+
+            if !allunique(getid.(persons))
+                throw(
+                    ArgumentError("PsychometricTest requires all person ids to be unique"),
+                )
+            end
         end
 
-        if !allunique(getid.(persons))
-            throw(ArgumentError("PsychometricTest requires all person ids to be unique"))
-        end
-
-        return new{I,P,R,IIT,PIT,ZT}(
+        return new{Ti,Tp,Tr,Tiid,Tpid,Tz}(
             items,
             persons,
             responses,
@@ -89,7 +101,8 @@ A PsychometricTest with 6 BasicResponse{Int64, Int64, Int64} from 2 BasicPerson{
 function PsychometricTest(
     items::AbstractVector{<:Item},
     persons::AbstractVector{<:Person},
-    responses::AbstractVector{<:Response},
+    responses::AbstractVector{<:Response};
+    check_args = true,
 )
     item_ids = getitemid.(responses)
     person_ids = getpersonid.(responses)
@@ -100,7 +113,15 @@ function PsychometricTest(
         getid(person) => findall(x -> x == getid(person), person_ids) for person in persons
     )
 
-    return PsychometricTest(items, persons, responses, item_ptr, person_ptr, missing)
+    return PsychometricTest(
+        items,
+        persons,
+        responses,
+        item_ptr,
+        person_ptr,
+        missing;
+        check_args,
+    )
 end
 
 """
@@ -216,10 +237,10 @@ function getindex(test::PsychometricTest, ::Colon, i)
 end
 
 function getindex(
-    test::PsychometricTest{I,P,R,IIT,PIT,ZT},
+    test::PsychometricTest{Ti,Tp,Tr,Tiid,Tpid,Tz},
     p::AbstractVector,
     i::AbstractVector,
-) where {I,P,R,IIT,PIT,ZT}
+) where {Ti,Tp,Tr,Tiid,Tpid,Tz}
     person_responses = [getindex(test, x, :) for x in p]
     responses = reduce(vcat, person_responses)
     filter!(x -> getitemid(x) in i, responses)
@@ -227,7 +248,7 @@ function getindex(
     person_map = idmap(getpersonid.(responses))
     item_map = idmap(getitemid.(responses))
 
-    res = Matrix{Union{ZT,R}}(ZT(), length(p), length(i))
+    res = Matrix{Union{Tz,eltype(Tr)}}(Tz(), length(p), length(i))
 
     for r in responses
         person_pos = person_map[getpersonid(r)]
@@ -533,15 +554,17 @@ true
 
 ```
 """
-function Base.Matrix(test::PsychometricTest{I,P,R,IIT,PIT,ZT}) where {I,P,R,IIT,PIT,ZT}
+function Base.Matrix(
+    test::PsychometricTest{Ti,Tp,Tr,Tiid,Tpid,Tz},
+) where {Ti,Tp,Tr,Tiid,Tpid,Tz}
     response_matrix = test[:, :]
 
-    response_type = fieldtype(R, :value)
-    output_type = haszeros(test) ? Union{ZT,response_type} : response_type
+    response_type = fieldtype(eltype(Tr), :value)
+    output_type = haszeros(test) ? Union{Tz,response_type} : response_type
     output_matrix = similar(response_matrix, output_type)
 
     for i in eachindex(response_matrix)
-        if response_matrix[i] isa ZT
+        if response_matrix[i] isa Tz
             output_matrix[i] = test.zeroval
         else
             output_matrix[i] = getvalue(response_matrix[i])
@@ -552,14 +575,14 @@ end
 
 haszeros(test::PsychometricTest) = any(test[:, :] .=== test.zeroval)
 
-function Base.show(
-    io::IO,
-    ::MIME"text/plain",
-    test::PsychometricTest{I,P,R,IIT,PIT,ZT},
-) where {I,P,R,IIT,PIT,ZT}
+function Base.show(io::IO, ::MIME"text/plain", test::PsychometricTest)
+    item_type = eltype(test.items)
+    response_type = eltype(test.responses)
+    person_type = eltype(test.persons)
+
     println(
         io,
-        "A PsychometricTest with $(nresponses(test)) $R from $(npersons(test)) $P and $(nitems(test)) $I",
+        "A PsychometricTest with $(nresponses(test)) $response_type from $(npersons(test)) $person_type and $(nitems(test)) $item_type",
     )
     return nothing
 end

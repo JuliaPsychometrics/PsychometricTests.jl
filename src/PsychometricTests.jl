@@ -1,9 +1,10 @@
 module PsychometricTests
 
+using Accessors
 using StatsBase
 using Tables
 
-import Base: getindex
+import Base: getindex, split
 
 export PsychometricTest
 export getitems, getpersons, getresponses
@@ -26,5 +27,6 @@ include("response.jl")
 include("test.jl")
 
 include("descriptives.jl")
+include("split.jl")
 
 end
