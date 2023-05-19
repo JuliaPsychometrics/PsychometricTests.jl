@@ -107,11 +107,8 @@ function PsychometricTest(
     item_ids = getitemid.(responses)
     person_ids = getpersonid.(responses)
 
-    item_ptr =
-        Dict(getid(item) => findall(x -> x == getid(item), item_ids) for item in items)
-    person_ptr = Dict(
-        getid(person) => findall(x -> x == getid(person), person_ids) for person in persons
-    )
+    item_ptr = create_ptr(items, item_ids)
+    person_ptr = create_ptr(persons, person_ids)
 
     return PsychometricTest(
         items,
@@ -122,6 +119,14 @@ function PsychometricTest(
         missing;
         check_args,
     )
+end
+
+function create_ptr(arr, ref)
+    asd = ThreadsX.map(arr) do x
+        id = getid(x)
+        return Pair(id, findall(x -> x == id, ref))
+    end
+    return Dict(asd)
 end
 
 """
