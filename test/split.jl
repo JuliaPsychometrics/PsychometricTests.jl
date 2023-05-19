@@ -2,8 +2,8 @@
     test = PsychometricTest(rand(0:1, 100, 10))
 
     @testset "split by item" begin
-        @test_throws BoundsError split(test, :, 1:11)
-        @test_throws BoundsError split(test, :, 0:2)
+        @test_throws ArgumentError split(test, :, 1:11)
+        @test_throws ArgumentError split(test, :, 0:2)
 
         s1, s2 = split(test, :, 1:5)
         @test nitems(s1) == 5
@@ -18,8 +18,8 @@
     end
 
     @testset "split by person" begin
-        @test_throws BoundsError split(test, 0:1, :)
-        @test_throws BoundsError split(test, 100:101, :)
+        @test_throws ArgumentError split(test, 0:1, :)
+        @test_throws ArgumentError split(test, 100:101, :)
 
         s1, s2 = split(test, 1:10, :)
         @test nitems(s1) == 10

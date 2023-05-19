@@ -20,6 +20,7 @@ export getid
 
 export personscores, personscore, personmeans, personmean
 export itemscores, itemscore, itemmeans, itemmean
+export split
 
 include("item.jl")
 include("person.jl")
@@ -28,5 +29,7 @@ include("test.jl")
 
 include("descriptives.jl")
 include("split.jl")
+
+include("precompile.jl")
 
 end
