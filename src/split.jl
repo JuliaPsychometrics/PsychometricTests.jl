@@ -5,8 +5,8 @@ function split(test::PsychometricTest, ::Colon, is)
     checkids(item_ids, is)
     checkids(item_ids, not_is)
 
-    subtest_1 = construct_split_by_items(test, is)
-    subtest_2 = construct_split_by_items(test, not_is)
+    subtest_1 = subtest(test, :, is)
+    subtest_2 = subtest(test, :, not_is)
 
     return subtest_1, subtest_2
 end
@@ -18,13 +18,13 @@ function split(test::PsychometricTest, ps, ::Colon)
     checkids(person_ids, ps)
     checkids(person_ids, not_ps)
 
-    subtest_1 = construct_split_by_persons(test, ps)
-    subtest_2 = construct_split_by_persons(test, not_ps)
+    subtest_1 = subtest(test, ps, :)
+    subtest_2 = subtest(test, not_ps, :)
 
     return subtest_1, subtest_2
 end
 
-function construct_split_by_items(test::PsychometricTest, is)
+function subtest(test::PsychometricTest, ::Colon, is)
     items = filter(x -> getid(x) in is, eachitem(test))
     item_ptr = filter(ptr -> ptr.first in is, test.item_ptr)
 
@@ -33,7 +33,7 @@ function construct_split_by_items(test::PsychometricTest, is)
     return test_split
 end
 
-function construct_split_by_persons(test::PsychometricTest, ps)
+function subtest(test::PsychometricTest, ps, ::Colon)
     persons = filter(x -> getid(x) in ps, eachperson(test))
     person_ptr = filter(ptr -> ptr.first in ps, test.person_ptr)
 
