@@ -21,12 +21,12 @@ export getid
 
 export personscores, personscore, personmeans, personmean
 export itemscores, itemscore, itemmeans, itemmean
-export split
+export subset, split
 
 include("item.jl")
 include("person.jl")
 include("response.jl")
-include("test.jl")
+include("psychometric_test.jl")
 
 include("descriptives.jl")
 include("split.jl")

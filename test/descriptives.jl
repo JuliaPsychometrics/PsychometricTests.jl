@@ -1,4 +1,4 @@
-@testset "Descriptive Statistics" begin
+@testset "Descriptive statistics" begin
     data = rand(0:1, 10, 3)
     test = PsychometricTest(data)
 

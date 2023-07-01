@@ -124,7 +124,8 @@ end
 function create_ptr(arr, ref)
     asd = ThreadsX.map(arr) do x
         id = getid(x)
-        return Pair(id, findall(x -> x == id, ref))
+        values = findall(x -> x == id, ref)
+        return Pair(id, values)
     end
     return Dict(asd)
 end
