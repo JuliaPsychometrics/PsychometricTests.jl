@@ -37,8 +37,6 @@ getpersonid(response::Response) = response.person_id
 A minimal implementation of [`Response`](@ref).
 Contains an item id `item_id::IIT`, person id `person_id::PIT` and a response value `value::T`.
 """
-struct BasicResponse{IIT,PIT,T} <: Response
-    item_id::IIT
-    person_id::PIT
+struct BasicResponse{T} <: Response
     value::T
 end

@@ -4,6 +4,9 @@ using Accessors
 using StatsBase
 using Tables
 using ThreadsX
+using DimensionalData
+using .LookupArrays
+using DimensionalData: @dim, XDim, YDim
 
 import Base: getindex, split
 
@@ -23,6 +26,9 @@ export personscores, personscore, personmeans, personmean
 export itemscores, itemscore, itemmeans, itemmean
 export subset, split
 
+# tmp
+export P, I
+
 include("item.jl")
 include("person.jl")
 include("response.jl")
@@ -31,6 +37,6 @@ include("psychometric_test.jl")
 include("descriptives.jl")
 include("split.jl")
 
-include("precompile.jl")
+# include("precompile.jl")
 
 end
