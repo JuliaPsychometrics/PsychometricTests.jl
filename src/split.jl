@@ -1,8 +1,16 @@
 """
-    split(test::PsychometricTest, ps, :)
-    split(test::PsychometricTest, :, is)
+    split(test::PsychometricTest, ps, :; view = false)
+    split(test::PsychometricTest, :, is; view = false)
 
 Split a psychometric test by item or person indices.
+`split` returns a tuple of psychometric tests where the first test contains data for indices
+provided by `ps` or `is`, and the second test contains data for indices `!ps` or `!is` respectively.
+
+If `view = false` (the default), copies of `test` are returned.
+If `view = true`, views into the original `test` are returned.
+This can improve performance for cases where data does not need to be modified.
+
+If only a single subtest is needed, see also [`subset`](@ref).
 """
 function Base.split(test::PsychometricTest, ps, ::Colon; view::Bool = false)
     person_ids = getid.(getpersons(test))
@@ -24,6 +32,17 @@ function Base.split(test::PsychometricTest, ::Colon, is; view::Bool = false)
     return subtest_1, subtest_2
 end
 
+"""
+    subset(test::PsychometricTest, ps, is; view = false)
+
+Return a psychometric test that is a subset of `test`.
+The resulting subtest will contain responses for persons and items provided by indices `ps`
+and `is` respectively.
+
+If `view = false` (the default), copies of `test` are returned.
+If `view = true`, views into the original `test` are returned.
+This can improve performance for cases where data does not need to be modified.
+"""
 function subset(test::PsychometricTest, ps, is; view::Bool = false)
     if view
         _subset_view(test, ps, is)
