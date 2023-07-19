@@ -1,14 +1,11 @@
 module PsychometricTests
 
-using Accessors
+using DimensionalData
+using DimensionalData: @dim, XDim, YDim
+using .LookupArrays
+using LinearAlgebra
 using StatsBase
 using Tables
-using ThreadsX
-using DimensionalData
-using .LookupArrays
-using DimensionalData: @dim, XDim, YDim
-using LinearAlgebra
-using LazyArrays
 
 using StatsBase: cov2cor!
 
@@ -16,12 +13,9 @@ import Base: getindex, split
 
 export PsychometricTest
 export getitems, getpersons, getresponses
-export eachitem, eachperson, eachresponse
-export nitems, npersons, nresponses
-export additems!, addpersons!, addresponses!
-export invalidate!
+export response_matrix
 
-export Response, BasicResponse, getvalue, getitemid, getpersonid
+export Response, BasicResponse, getvalue
 export Person, BasicPerson
 export Item, BasicItem
 export getid
@@ -29,10 +23,6 @@ export getid
 export personscores, personscore, personmeans, personmean, personcov, personcor
 export itemscores, itemscore, itemmeans, itemmean, itemcov, itemcor
 export subset, split
-export response_matrix
-
-# tmp
-export P, I
 
 include("item.jl")
 include("person.jl")

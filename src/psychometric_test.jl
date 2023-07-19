@@ -90,8 +90,8 @@ getindex(test::PsychometricTest, ps, is) = getindex(test.responses, At(ps), At(i
 getindex(test::PsychometricTest, ps, ::Colon) = getindex(test.responses, At(ps), :)
 getindex(test::PsychometricTest, ::Colon, is) = getindex(test.responses, :, At(is))
 
-getresponses(test::PsychometricTest) = test.responses
 getitems(test::PsychometricTest) = test.items
 getpersons(test::PsychometricTest) = test.persons
+getresponses(test::PsychometricTest) = test.responses
 
 response_matrix(test::PsychometricTest) = getvalue.(test.responses)

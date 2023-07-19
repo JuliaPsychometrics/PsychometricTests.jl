@@ -32,6 +32,22 @@ function subset(test::PsychometricTest, ps, is; view::Bool = false)
     end
 end
 
+function subset(test::PsychometricTest, ps, ::Colon; view::Bool = false)
+    if view
+        _subset_view(test, ps, getid.(getitems(test)))
+    else
+        _subset_copy(test, ps, getid.(getitems(test)))
+    end
+end
+
+function subset(test::PsychometricTest, ::Colon, is; view::Bool = false)
+    if view
+        _subset_view(test, getid.(getpersons(test)), is)
+    else
+        _subset_copy(test, getid.(getpersons(test)), is)
+    end
+end
+
 function _subset_copy(test::PsychometricTest, ps, is)
     items = filter(x -> getid(x) in is, test.items)
     persons = filter(x -> getid(x) in ps, test.persons)
@@ -46,10 +62,3 @@ function _subset_view(test::PsychometricTest, ps, is)
     return PsychometricTest(items, persons, responses)
 end
 
-function subset(test::PsychometricTest, ps, ::Colon)
-    return subset(test, ps, getid.(test.items))
-end
-
-function subset(test::PsychometricTest, ::Colon, is)
-    return subset(test, getid.(test.persons), is)
-end
