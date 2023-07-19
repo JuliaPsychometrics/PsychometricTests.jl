@@ -7,6 +7,10 @@ using ThreadsX
 using DimensionalData
 using .LookupArrays
 using DimensionalData: @dim, XDim, YDim
+using LinearAlgebra
+using LazyArrays
+
+using StatsBase: cov2cor!
 
 import Base: getindex, split
 
@@ -22,9 +26,10 @@ export Person, BasicPerson
 export Item, BasicItem
 export getid
 
-export personscores, personscore, personmeans, personmean
-export itemscores, itemscore, itemmeans, itemmean
+export personscores, personscore, personmeans, personmean, personcov, personcor
+export itemscores, itemscore, itemmeans, itemmean, itemcov, itemcor
 export subset, split
+export response_matrix
 
 # tmp
 export P, I
@@ -34,7 +39,7 @@ include("person.jl")
 include("response.jl")
 include("psychometric_test.jl")
 
-include("descriptives.jl")
+include("descriptive_statistics.jl")
 include("split.jl")
 
 # include("precompile.jl")

@@ -8,11 +8,19 @@ using PrecompileTools
     tbl = (a = item_data, b = item_data, c = item_data)
     test = PsychometricTest(tbl)
 
-    # descriptives
+    # descriptive statistics
     personscores(test)
+    personscore(test, 1)
     itemscores(test)
+    itemscore(test, 1)
     personmeans(test)
+    personmean(test, 1)
     itemmeans(test)
+    itemmean(test, 1)
+    itemcov(test)
+    itemcor(test)
+    personcov(test)
+    personcor(test)
 
     # test splitting
     split(test, :, [:a, :b])

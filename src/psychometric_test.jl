@@ -54,7 +54,7 @@ function PsychometricTest(table, item_vars = nothing, id_var = nothing)
     columns = Tables.columns(table)
 
     if isnothing(item_vars)
-        item_ids = Tables.columnnames(columns)
+        item_ids = [colname for colname in Tables.columnnames(columns)]
     else
         item_ids = item_vars
     end
@@ -78,7 +78,6 @@ function PsychometricTest(table, item_vars = nothing, id_var = nothing)
     end
 
     responses = DimArray(response_matrix, (P(person_ids), I(item_ids)))
-
     return PsychometricTest(items, persons, responses)
 end
 
@@ -90,3 +89,9 @@ end
 getindex(test::PsychometricTest, ps, is) = getindex(test.responses, At(ps), At(is))
 getindex(test::PsychometricTest, ps, ::Colon) = getindex(test.responses, At(ps), :)
 getindex(test::PsychometricTest, ::Colon, is) = getindex(test.responses, :, At(is))
+
+getresponses(test::PsychometricTest) = test.responses
+getitems(test::PsychometricTest) = test.items
+getpersons(test::PsychometricTest) = test.persons
+
+response_matrix(test::PsychometricTest) = getvalue.(test.responses)
