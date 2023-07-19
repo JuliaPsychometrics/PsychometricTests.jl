@@ -31,13 +31,19 @@ responses for both items and persons.
     Otherwise an `ArgumentError` is thrown.
 
 """
-struct PsychometricTest{Ti<:AbstractVector{<:Item},Tp<:AbstractVector{<:Person},Tr}
+struct PsychometricTest{
+    Ti<:AbstractVector{<:Item},
+    Tp<:AbstractVector{<:Person},
+    Tr,
+    Ts<:AbstractDict{Symbol,<:Any},
+}
     items::Ti
     persons::Tp
     responses::Tr
+    scales::Ts
 end
 
-function PsychometricTest(m::AbstractMatrix{<:T}) where {T}
+function PsychometricTest(m::AbstractMatrix; scales = nothing)
     item_ids = 1:size(m, 2)
     person_ids = 1:size(m, 1)
 
@@ -47,10 +53,14 @@ function PsychometricTest(m::AbstractMatrix{<:T}) where {T}
     Tr = BasicResponse{eltype(m)}
     responses = DimArray(Tr.(m), (P(person_ids), I(item_ids)))
 
-    return PsychometricTest(items, persons, responses)
+    if isnothing(scales)
+        scales = Dict{Symbol,Any}()
+    end
+
+    return PsychometricTest(items, persons, responses, scales)
 end
 
-function PsychometricTest(table, item_vars = nothing, id_var = nothing)
+function PsychometricTest(table, item_vars = nothing, id_var = nothing; scales = nothing)
     columns = Tables.columns(table)
 
     if isnothing(item_vars)
@@ -77,8 +87,12 @@ function PsychometricTest(table, item_vars = nothing, id_var = nothing)
         response_matrix[:, j] .= Tr.(col)
     end
 
+    if isnothing(scales)
+        scales = Dict{Symbol,Any}()
+    end
+
     responses = DimArray(response_matrix, (P(person_ids), I(item_ids)))
-    return PsychometricTest(items, persons, responses)
+    return PsychometricTest(items, persons, responses, scales)
 end
 
 function infer_response_type(tbl, item_ids)
@@ -94,4 +108,13 @@ getitems(test::PsychometricTest) = test.items
 getpersons(test::PsychometricTest) = test.persons
 getresponses(test::PsychometricTest) = test.responses
 
+function getresponses(test::PsychometricTest, scale::Symbol)
+    scale_items = test.scales[scale]
+    return test.responses[I = At(scale_items)]
+end
+
 response_matrix(test::PsychometricTest) = getvalue.(test.responses)
+
+function response_matrix(test::PsychometricTest, scale::Symbol)
+    return getvalue.(getresponses(test, scale))
+end

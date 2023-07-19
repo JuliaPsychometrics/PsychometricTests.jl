@@ -1,135 +1,68 @@
 @testset "PsychometricTest" begin
-    @test_throws ArgumentError PsychometricTest(
-        fill(BasicItem(1), 2),
-        [BasicPerson(1)],
-        [BasicResponse(1, 1, 1)],
-    )
+    @testset "Constructors" begin
+        # from matrix
+        data = rand(0:1, 10, 3)
+        t = PsychometricTest(data)
 
-    @test_throws ArgumentError PsychometricTest(
-        [BasicItem(1)],
-        fill(BasicPerson(1), 2),
-        [BasicResponse(1, 1, 1)],
-    )
+        @test length(t.items) == 3
+        @test length(t.persons) == 10
+        @test size(t.responses) == (10, 3)
+        @test eltype(t.responses) == BasicResponse{Int}
+        @test t.scales == Dict{Symbol,Any}()
 
-    data = [
-        0 1
-        1 1
-        1 0
-    ]
+        scales = Dict(:s1 => 1:2, :s2 => 3)
+        t = PsychometricTest(data; scales)
+        @test t.scales == scales
 
-    t = PsychometricTest(data)
+        # from Tables.jl source
+        data = (a = rand(0:1, 10), b = rand(0:1, 10), c = rand(0:1, 10))
+        t = PsychometricTest(data)
 
-    @test length(t.items) == 2
-    @test length(t.persons) == 3
-    @test length(t.responses) == 6
+        @test length(t.items) == 3
+        @test length(t.persons) == 10
+        @test size(t.responses) == (10, 3)
+        @test eltype(t.responses) == BasicResponse{Int}
+        @test t.scales == Dict{Symbol,Any}()
 
-    tbl = Tables.table(data)
-    @test PsychometricTest(tbl) isa PsychometricTest
-    @test length(PsychometricTest(tbl).items) == 2
-    @test length(PsychometricTest(tbl).persons) == 3
-    @test length(PsychometricTest(tbl).responses) == 6
+        t = PsychometricTest(data; scales)
+        @test t.scales == scales
 
-    @testset "getindex" begin
-        responses_p1 =
-            responses_p2 = @test t[1, :] == [BasicResponse(1, 1, 0), BasicResponse(2, 1, 1)]
-        @test t[1:2, :] == [
-            BasicResponse(1, 1, 0) BasicResponse(2, 1, 1)
-            BasicResponse(1, 2, 1) BasicResponse(2, 2, 1)
-        ]
-
-        @test t[:, 1] ==
-              [BasicResponse(1, 1, 0), BasicResponse(1, 2, 1), BasicResponse(1, 3, 1)]
-        @test t[:, 1:2] == [
-            BasicResponse(1, 1, 0) BasicResponse(2, 1, 1)
-            BasicResponse(1, 2, 1) BasicResponse(2, 2, 1)
-            BasicResponse(1, 3, 1) BasicResponse(2, 3, 0)
-        ]
+        data = (id = 1:10, a = rand(0:1, 10), b = rand(0:1, 10), c = rand(0:1, 10))
+        t = PsychometricTest(data, [:a, :b], :id)
+        @test length(t.items) == 2
+        @test length(t.persons) == 10
+        @test size(t.responses) == (10, 2)
     end
 
     @testset "Accessors" begin
-        @test getpersons(t) == [BasicPerson(p) for p in 1:3]
-        @test getitems(t) == [BasicItem(i) for i in 1:2]
-        @test getresponses(t) ==
-              vec([BasicResponse(i, p, data[p, i]) for p in 1:3, i in 1:2])
+        data = rand(0:1, 10, 3)
+        t = PsychometricTest(data, scales = Dict(:s1 => 1:2, :s2 => [3]))
 
-        @test nitems(t) == 2
-        @test npersons(t) == 3
-        @test nresponses(t) == 6
+        @test getitems(t) == t.items
+        @test length(getitems(t)) == 3
+
+        @test getpersons(t) == t.persons
+        @test length(getpersons(t)) == 10
+
+        @test getresponses(t) == t.responses
+        @test size(getresponses(t)) == (10, 3)
+
+        @test size(getresponses(t, :s1)) == (10, 2)
+        @test size(getresponses(t, :s2)) == (10, 1)
     end
 
-    @testset "Setters" begin
-        t = PsychometricTest(data)
+    @testset "response_matrix" begin
+        data = [
+            0 1
+            1 0
+            1 1
+            0 0
+            1 0
+        ]
 
-        # additems!
-        @test additems!(t, BasicItem(3)) == [BasicItem(i) for i in 1:3]
-        @test nitems(t) == 3
-        @test_throws ArgumentError additems!(t, BasicItem(3))
-
-        @test additems!(t, [BasicItem(i) for i in 4:5]) == [BasicItem(i) for i in 1:5]
-        @test nitems(t) == 5
-        @test_throws ArgumentError additems!(t, [BasicItem(4)])
-
-        # addpersons!
-        @test addpersons!(t, BasicPerson(4)) == [BasicPerson(p) for p in 1:4]
-        @test npersons(t) == 4
-        @test_throws ArgumentError addpersons!(t, BasicPerson(1))
-
-        @test addpersons!(t, [BasicPerson(p) for p in 5:6]) == [BasicPerson(p) for p in 1:6]
-        @test npersons(t) == 6
-        @test_throws ArgumentError addpersons!(t, [BasicPerson(1)])
-
-        # addresponses!
-        t = PsychometricTest(data)
-        @test_throws ArgumentError addresponses!(t, BasicResponse(10, 1, 1))
-        @test_throws ArgumentError addresponses!(t, BasicResponse(1, 10, 1))
-        @test_throws ArgumentError addresponses!(t, BasicResponse(1, 1, 1))
-
-        oldt = deepcopy(t)
-        addpersons!(t, BasicPerson(4))
-
-        new_responses = [BasicResponse(i, 4, 1) for i in 1:2]
-        @test addresponses!(t, new_responses) == vcat(getresponses(oldt), new_responses)
-        @test oldt.person_ptr != t.person_ptr
-        @test oldt.item_ptr != t.item_ptr
-        @test t[4, :] == new_responses
-
-        for p in 1:3
-            @test t[p, :] == oldt[p, :]
-        end
-
-        for i in 1:2
-            @test t[1:3, [i]] == oldt[1:3, [i]]
-        end
-
-        # manual invalidation
-        t2 = deepcopy(oldt)
-        addpersons!(t2, BasicPerson(4))
-        addresponses!(t2, new_responses, invalidate = false)
-        @test oldt.person_ptr == t2.person_ptr
-        @test oldt.item_ptr == t2.item_ptr
-
-        invalidate!(t2)
-        @test t2.person_ptr == t.person_ptr
-        @test t2.item_ptr == t2.item_ptr
-
-        # overwrite responses
-        t = PsychometricTest(data)
-        addresponses!(t, BasicResponse(1, 1, 1), force = true)
-        @test length(getresponses(t)) == length(data)
-
-        # make sure ordering is preserved
-        @test t[1, :] == [BasicResponse(1, 1, 1), BasicResponse(2, 1, 1)]
-        @test t[:, 1] ==
-              [BasicResponse(1, 1, 1), BasicResponse(1, 2, 1), BasicResponse(1, 3, 1)]
-    end
-
-    @testset "Matrix" begin
-        t = PsychometricTest(data)
-        @test Matrix(t) == data
-        @test eltype(Matrix(t)) == Int
-
-        addpersons!(t, BasicPerson(4))
-        addresponses!(t, BasicResponse(1, 4, 1))
-        @test eltype(Matrix(t)) == Union{Missing,Int}
+        t = PsychometricTest(data, scales = Dict(:s1 => 1:2, :s2 => 2))
+        @test response_matrix(t) == data
+        @test response_matrix(t, :s1) == data
+        @test response_matrix(t, :s2) == data[:, 2]
     end
 end

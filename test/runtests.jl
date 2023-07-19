@@ -8,6 +8,6 @@ using StatsBase
     include("person.jl")
     include("response.jl")
     include("psychometric_test.jl")
-    include("descriptives.jl")
-    include("split.jl")
+    include("descriptive_statistics.jl")
+    # include("split.jl")
 end

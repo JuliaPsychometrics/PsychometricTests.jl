@@ -9,6 +9,12 @@ function personscores(test::PsychometricTest)
     return scores
 end
 
+function personscores(test::PsychometricTest, scale::Symbol)
+    responses = getresponses(test, scale)
+    scores = sum(getvalue, responses, dims = I)
+    return scores
+end
+
 """
     personscore(test::PsychometricTest, id)
 
@@ -20,6 +26,12 @@ function personscore(test::PsychometricTest, id)
     return scores
 end
 
+function personscore(test::PsychometricTest, id, scale::Symbol)
+    responses = getresponses(test, scale)[P = At(id)]
+    scores = sum(getvalue, responses)
+    return scores
+end
+
 """
     itemscores(test::PsychometricTest)
 
@@ -27,6 +39,12 @@ Calculate the total score for each item in `test`.
 """
 function itemscores(test::PsychometricTest)
     responses = getresponses(test)
+    scores = sum(getvalue, responses, dims = P)
+    return scores
+end
+
+function itemscores(test::PsychometricTest, scale::Symbol)
+    responses = getresponses(test, scale)
     scores = sum(getvalue, responses, dims = P)
     return scores
 end
@@ -53,6 +71,12 @@ function personmeans(test::PsychometricTest)
     return average
 end
 
+function personmeans(test::PsychometricTest, scale::Symbol)
+    responses = getresponses(test, scale)
+    average = mean(getvalue, responses, dims = I)
+    return average
+end
+
 """
     personmean(test::PsychometricTest, id)
 
@@ -60,6 +84,12 @@ Calculate the mean score for person with identifier `id` in `test`.
 """
 function personmean(test::PsychometricTest, id)
     responses = test[id, :]
+    average = mean(getvalue, responses)
+    return average
+end
+
+function personmean(test::PsychometricTest, id, scale::Symbol)
+    responses = getresponses(test, scale)[P = At(id)]
     average = mean(getvalue, responses)
     return average
 end
@@ -75,6 +105,12 @@ function itemmeans(test::PsychometricTest)
     return average
 end
 
+function itemmeans(test::PsychometricTest, scale::Symbol)
+    responses = getresponses(test, scale)
+    average = mean(getvalue, responses, dims = P)
+    return average
+end
+
 """
     itemmean(test::PsychometricTest, id)
 
@@ -82,6 +118,12 @@ Calculate the mean score for item with identifier `id` in `test`.
 """
 function itemmean(test::PsychometricTest, id)
     responses = test[:, id]
+    average = mean(getvalue, responses)
+    return average
+end
+
+function itemmean(test::PsychometricTest, id, scale::Symbol)
+    responses = getresponses(test, scale)[I = At(id)]
     average = mean(getvalue, responses)
     return average
 end
