@@ -36,7 +36,8 @@
 
     @testset "Accessors" begin
         data = rand(0:1, 10, 3)
-        t = PsychometricTest(data, scales = Dict(:s1 => 1:2, :s2 => [3]))
+        scales = Dict(:s1 => 1:2, :s2 => [3])
+        t = PsychometricTest(data; scales)
 
         @test getitems(t) == t.items
         @test length(getitems(t)) == 3
@@ -49,6 +50,8 @@
 
         @test size(getresponses(t, :s1)) == (10, 2)
         @test size(getresponses(t, :s2)) == (10, 1)
+
+        @test getscales(t) == scales
     end
 
     @testset "response_matrix" begin
@@ -64,5 +67,15 @@
         @test response_matrix(t) == data
         @test response_matrix(t, :s1) == data
         @test response_matrix(t, :s2) == data[:, 2]
+    end
+
+    @testset "scales" begin
+        t = PsychometricTest(rand(0:1, 10, 3))
+
+        @test length(getscales(t)) == 0
+        @test addscale!(t, :s1 => 1:2) == Dict{Symbol,Any}(:s1 => 1:2)
+        @test length(getscales(t)) == 1
+        @test deletescale!(t, :s1) == Dict{Symbol,Any}()
+        @test length(getscales(t)) == 0
     end
 end

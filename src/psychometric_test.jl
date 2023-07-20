@@ -107,6 +107,7 @@ getindex(test::PsychometricTest, ::Colon, is) = getindex(test.responses, :, At(i
 getitems(test::PsychometricTest) = test.items
 getpersons(test::PsychometricTest) = test.persons
 getresponses(test::PsychometricTest) = test.responses
+getscales(test::PsychometricTest) = test.scales
 
 function getresponses(test::PsychometricTest, scale::Symbol)
     scale_items = test.scales[scale]
@@ -118,3 +119,9 @@ response_matrix(test::PsychometricTest) = getvalue.(test.responses)
 function response_matrix(test::PsychometricTest, scale::Symbol)
     return getvalue.(getresponses(test, scale))
 end
+
+function addscale!(test::PsychometricTest, scale::Pair{Symbol,T}) where {T}
+    return push!(test.scales, scale)
+end
+
+deletescale!(test::PsychometricTest, scale::Symbol) = delete!(test.scales, scale)

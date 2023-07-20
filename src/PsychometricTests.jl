@@ -12,8 +12,9 @@ using StatsBase: cov2cor!
 import Base: getindex, split
 
 export PsychometricTest
-export getitems, getpersons, getresponses
+export getitems, getpersons, getresponses, getscales
 export response_matrix
+export addscale!, deletescale!
 
 export Response, BasicResponse, getvalue
 export Person, BasicPerson
