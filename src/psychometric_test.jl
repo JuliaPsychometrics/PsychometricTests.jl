@@ -125,3 +125,80 @@ function addscale!(test::PsychometricTest, scale::Pair{Symbol,T}) where {T}
 end
 
 deletescale!(test::PsychometricTest, scale::Symbol) = delete!(test.scales, scale)
+
+function Base.show(io::IO, test::PsychometricTest{Ti,Tp,Tr,Ts}) where {Ti,Tp,Tr,Ts}
+    npersons = format(length(getpersons(test)), commas = true)
+    nitems = format(length(getitems(test)), commas = true)
+    nresponses = format(length(getresponses(test)), commas = true)
+
+    persontype = eltype(Tp)
+    itemtype = eltype(Ti)
+    responsetype = eltype(Tr)
+
+
+    baseinfo_panel = Term.Panel(
+        "number of persons: {magenta}$(npersons){/magenta} {dim}(type: $persontype)",
+        "number of items: {magenta}$(nitems){/magenta} {dim}(type: $itemtype)",
+        "number of responses: {magenta}$(nresponses){/magenta} {dim}(type: $responsetype)",
+        title = "base info",
+        width = 60,
+    )
+
+    types_panel = Term.Panel(
+        "{red}::{/red}$(typeformat(fieldtype(persontype, :id)))",
+        "{red}::{/red}$(typeformat(fieldtype(itemtype, :id)))",
+        "",
+        title = "index",
+        width = 18,
+        justify = :center,
+    )
+
+    scales = getscales(test)
+
+    if length(scales) > 0
+        scale_panel_content = (
+            Term.Table(
+                Dict(:index => collect(keys(scales)), :items => collect(values(scales))),
+                box = :SIMPLE,
+                columns_justify = :left,
+                columns_style = ["bold yellow", "default"],
+            ),
+            "{dim}Hint: use deletescale! to remove scales from the test.",
+        )
+    else
+        scale_panel_content = "{dim}This PsychometricTest does not contain any scales. use {cyan}addscale!{/cyan} to add new scales to the test...{/dim}"
+    end
+
+
+    scales_panel = Term.Panel(
+        scale_panel_content,
+        title = "{green}scales",
+        width = 78,
+        style = "green",
+    )
+
+    println(
+        Term.Panel(
+            baseinfo_panel * types_panel / scales_panel,
+            title = "{dim}PsychometricTest",
+            width = 84,
+            style = "dim",
+            subtitle = "{dim}PsychometricTests.jl",
+            subtitle_justify = :right,
+        ),
+    )
+
+    return nothing
+end
+
+function typeformat(x)
+    if x <: Number
+        return "{cyan}$x{/cyan}"
+    elseif x <: AbstractString
+        return "{yellow}$x{/yellow}"
+    elseif x <: Symbol
+        return "{orange}$x{/orange}"
+    else
+        return "$x"
+    end
+end

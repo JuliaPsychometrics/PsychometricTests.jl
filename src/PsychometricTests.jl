@@ -6,6 +6,8 @@ using .LookupArrays
 using LinearAlgebra
 using StatsBase
 using Tables
+using Format
+import Term
 
 using StatsBase: cov2cor!
 
