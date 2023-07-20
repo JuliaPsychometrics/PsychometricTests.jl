@@ -2,34 +2,9 @@
 @dim I YDim "Item"
 
 """
-    PsychometricTest{I<:Item,P<:Person,R<:Response,IIT,PIT,ZT}
+    PsychometricTest{Ti,Tp,Tr,Ts}
 
 A struct representing a psychometric test.
-
-## Fields
-- `items`: A vector of unique items.
-- `persons`: A vector of unique persons.
-- `responses`: A vector of responses.
-- `item_ptr`: A dictionary of key-value-pairs mapping the unique item identifier to responses.
-- `person_ptr`: A dictionary of key-value-pairs mapping the unique person identifier to responses.
-- `zeroval`: The zero value for the responses in matrix form (see Details).
-
-## Details
-[`PsychometricTest`](@ref) stores the person by item response matrix as a
-[coordinate list](https://en.wikipedia.org/wiki/Sparse_matrix#Coordinate_list_(COO)),
-allowing for a common data structure for both dense (all persons respond to the same items)
-and sparse tests (persons respond to (a subset of) different items, e.g. test equating).
-For sparse tests or tests with missing responses, `zeroval` determines the value of the
-missing responses when reconstructing the response matrix via [`Matrix`](@ref).
-
-### Construction
-At construction item and person pointers are precomputed to allow efficient lookup of
-responses for both items and persons.
-
-!!! warning
-    It is required that all item ids in `items` as well as person ids in `person` are unique!
-    Otherwise an `ArgumentError` is thrown.
-
 """
 struct PsychometricTest{
     Ti<:AbstractVector{<:Item},
@@ -43,6 +18,18 @@ struct PsychometricTest{
     scales::Ts
 end
 
+"""
+    PsychometricTest(m::AbstractMatrix; scales = nothing)
+
+Construct a `PsychometricTest` from a response matrix `m`.
+
+```jldoctest
+julia> m = ones(Int, 10, 2);
+
+julia> PsychometricTest(m);
+```
+
+"""
 function PsychometricTest(m::AbstractMatrix; scales = nothing)
     item_ids = 1:size(m, 2)
     person_ids = 1:size(m, 1)
@@ -115,6 +102,7 @@ function getresponses(test::PsychometricTest, scale::Symbol)
 end
 
 response_matrix(test::PsychometricTest) = getvalue.(test.responses)
+response_matrix(responses::AbstractArray{<:Response}) = getvalue.(responses)
 
 function response_matrix(test::PsychometricTest, scale::Symbol)
     return getvalue.(getresponses(test, scale))
@@ -137,16 +125,16 @@ function Base.show(io::IO, test::PsychometricTest{Ti,Tp,Tr,Ts}) where {Ti,Tp,Tr,
 
 
     baseinfo_panel = Term.Panel(
-        "number of persons: {magenta}$(npersons){/magenta} {dim}(type: $persontype)",
-        "number of items: {magenta}$(nitems){/magenta} {dim}(type: $itemtype)",
-        "number of responses: {magenta}$(nresponses){/magenta} {dim}(type: $responsetype)",
+        "persons: {magenta}$(npersons){/magenta} {dim}(type: $persontype)",
+        "items: {magenta}$(nitems){/magenta} {dim}(type: $itemtype)",
+        "responses: {magenta}$(nresponses){/magenta} {dim}(type: $responsetype)",
         title = "base info",
         width = 60,
     )
 
     types_panel = Term.Panel(
-        "{red}::{/red}$(typeformat(fieldtype(persontype, :id)))",
-        "{red}::{/red}$(typeformat(fieldtype(itemtype, :id)))",
+        "$(typeformat(fieldtype(persontype, :id)))",
+        "$(typeformat(fieldtype(itemtype, :id)))",
         "",
         title = "index",
         width = 18,
@@ -163,10 +151,10 @@ function Base.show(io::IO, test::PsychometricTest{Ti,Tp,Tr,Ts}) where {Ti,Tp,Tr,
                 columns_justify = :left,
                 columns_style = ["bold yellow", "default"],
             ),
-            "{dim}Hint: use deletescale! to remove scales from the test.",
+            "{dim}Hint: Use deletescale! to remove scales from the test.",
         )
     else
-        scale_panel_content = "{dim}This PsychometricTest does not contain any scales. use {cyan}addscale!{/cyan} to add new scales to the test...{/dim}"
+        scale_panel_content = "{dim}This PsychometricTest does not contain any scales yet.{/dim}\n{dim}Use {cyan}addscale!{/cyan} to add new scales to the test.{/dim}"
     end
 
 
@@ -177,7 +165,8 @@ function Base.show(io::IO, test::PsychometricTest{Ti,Tp,Tr,Ts}) where {Ti,Tp,Tr,
         style = "green",
     )
 
-    println(
+    print(
+        io,
         Term.Panel(
             baseinfo_panel * types_panel / scales_panel,
             title = "{dim}PsychometricTest",
@@ -193,12 +182,13 @@ end
 
 function typeformat(x)
     if x <: Number
-        return "{cyan}$x{/cyan}"
+        return "{cyan}::$x{/cyan}"
     elseif x <: AbstractString
-        return "{yellow}$x{/yellow}"
+        return "{yellow}::$x{/yellow}"
     elseif x <: Symbol
-        return "{orange}$x{/orange}"
+        return "{blue}::$x{/blue}"
     else
         return "$x"
     end
 end
+

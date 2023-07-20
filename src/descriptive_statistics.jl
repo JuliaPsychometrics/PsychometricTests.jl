@@ -122,12 +122,6 @@ function itemmean(test::PsychometricTest, id)
     return average
 end
 
-function itemmean(test::PsychometricTest, id, scale::Symbol)
-    responses = getresponses(test, scale)[I = At(id)]
-    average = mean(getvalue, responses)
-    return average
-end
-
 function itemcov(test::PsychometricTest; corrected::Bool = true)
     C = cov(response_matrix(test), dims = P; corrected)
     return C
