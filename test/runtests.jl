@@ -7,6 +7,7 @@ using StatsBase
     include("item.jl")
     include("person.jl")
     include("response.jl")
-    include("test.jl")
-    include("descriptives.jl")
+    include("psychometric_test.jl")
+    include("descriptive_statistics.jl")
+    include("split.jl")
 end
