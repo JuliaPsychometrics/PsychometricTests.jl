@@ -35,6 +35,6 @@ include("psychometric_test.jl")
 include("descriptive_statistics.jl")
 include("split.jl")
 
-# include("precompile.jl")
+include("precompile.jl")
 
 end
