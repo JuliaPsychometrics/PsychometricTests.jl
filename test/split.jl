@@ -45,4 +45,27 @@
         @test length(getresponses(s1)) == 500
         @test length(getresponses(s2)) == 500
     end
+
+    @testset "scale handling" begin
+        data = rand(0:1, 10, 4)
+        scales = Dict(:s1 => 1:2, :s2 => 2:3, :s3 => 2:4)
+        test = PsychometricTest(data; scales)
+
+        @test getscales(test) == scales
+
+        s1, s2 = split(test, 1:5, :)
+        @test getscales(s1) == getscales(s2) == scales
+
+        s1, s2 = split(test, :, 1:2)
+        @test getscales(s1) == Dict(:s1 => 1:2)
+        @test getscales(s2) == Dict()
+
+        s1, s2 = split(test, :, 1:3)
+        @test getscales(s1) == Dict(:s1 => 1:2, :s2 => 2:3)
+        @test getscales(s2) == Dict()
+
+        s1, s2 = split(test, :, 1)
+        @test getscales(s1) == Dict()
+        @test getscales(s2) == Dict(:s2 => 2:3, :s3 => 2:4)
+    end
 end

@@ -71,8 +71,10 @@ function _subset_copy(test::PsychometricTest, ps, is)
     items = filter(x -> getid(x) in is, test.items)
     persons = filter(x -> getid(x) in ps, test.persons)
     responses = test[ps, is]
-    # TODO: handle scales correctly
-    scales = getscales(test)
+
+    scales = copy(getscales(test))
+    filter!(x -> all(in.(x[2], Ref(is))), scales)
+
     return PsychometricTest(items, persons, responses, scales)
 end
 
@@ -80,8 +82,10 @@ function _subset_view(test::PsychometricTest, ps, is)
     items = @view test.items[findall(x -> getid(x) in is, test.items)]
     persons = @view test.persons[findall(x -> getid(x) in ps, test.persons)]
     responses = @view test.responses[P = At(ps), I = At(is)]
-    # TODO: handle scales correctly
-    scales = getscales(test)
+
+    scales = copy(getscales(test))
+    filter!(x -> all(in.(x[2], Ref(is))), scales)
+
     return PsychometricTest(items, persons, responses, scales)
 end
 
