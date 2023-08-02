@@ -1,17 +1,12 @@
 """
     personscores(test::PsychometricTest)
+    personscores(test::PsychometricTest, scale::Symbol)
 
 Calculate the total scores for each person in `test`.
 """
-function personscores(test::PsychometricTest)
-    responses = getresponses(test)
-    scores = sum(getvalue, responses, dims = I)
-    return scores
-end
-
-function personscores(test::PsychometricTest, scale::Symbol)
-    responses = getresponses(test, scale)
-    scores = sum(getvalue, responses, dims = I)
+function personscores(test::PsychometricTest, args...)
+    responses = response_matrix(test, args...)
+    scores = sum(responses, dims = I)
     return scores
 end
 
@@ -34,18 +29,13 @@ end
 
 """
     itemscores(test::PsychometricTest)
+    itemscores(test::PsychometricTest, scale::Symbol)
 
 Calculate the total score for each item in `test`.
 """
-function itemscores(test::PsychometricTest)
-    responses = getresponses(test)
-    scores = sum(getvalue, responses, dims = P)
-    return scores
-end
-
-function itemscores(test::PsychometricTest, scale::Symbol)
-    responses = getresponses(test, scale)
-    scores = sum(getvalue, responses, dims = P)
+function itemscores(test::PsychometricTest, args...)
+    responses = response_matrix(test, args...)
+    scores = sum(responses, dims = P)
     return scores
 end
 
@@ -65,15 +55,9 @@ end
 
 Calculate the mean scores for each person in `test`.
 """
-function personmeans(test::PsychometricTest)
-    responses = getresponses(test)
-    average = mean(getvalue, responses, dims = I)
-    return average
-end
-
-function personmeans(test::PsychometricTest, scale::Symbol)
-    responses = getresponses(test, scale)
-    average = mean(getvalue, responses, dims = I)
+function personmeans(test::PsychometricTest, args...)
+    responses = response_matrix(test, args...)
+    average = mean(responses, dims = I)
     return average
 end
 
@@ -96,18 +80,13 @@ end
 
 """
     itemmeans(test::PsychometricTest)
+    itemmeans(test::PsychometricTest, scale::Symbol)
 
 Calculate the mean scores for each item in `test`.
 """
-function itemmeans(test::PsychometricTest)
-    responses = getresponses(test)
-    average = mean(getvalue, responses, dims = P)
-    return average
-end
-
-function itemmeans(test::PsychometricTest, scale::Symbol)
-    responses = getresponses(test, scale)
-    average = mean(getvalue, responses, dims = P)
+function itemmeans(test::PsychometricTest, args...)
+    responses = response_matrix(test, args...)
+    average = mean(responses, dims = P)
     return average
 end
 
@@ -122,22 +101,49 @@ function itemmean(test::PsychometricTest, id)
     return average
 end
 
-function itemcov(test::PsychometricTest; corrected::Bool = true)
-    C = cov(response_matrix(test), dims = P; corrected)
+
+"""
+    itemcov(test::PsychometricTest; corrected = false)
+    itemcov(test::PsychometricTest, scale::Symbol; corrected = false)
+
+Calculate the item covariance matrix.
+"""
+function itemcov(test::PsychometricTest, args...; corrected::Bool = true)
+    responses = response_matrix(test, args...)
+    C = cov(responses, dims = P; corrected)
     return C
 end
 
-function itemcor(test::PsychometricTest; corrected::Bool = true)
-    C = itemcov(test; corrected)
+"""
+    itemcor(test::PsychometricTest; corrected = false)
+    itemcor(test::PsychometricTest, scale::Symbol; corrected = false)
+
+Calculate the item correlation matrix.
+"""
+function itemcor(test::PsychometricTest, args...; kwargs...)
+    C = itemcov(test, args...; kwargs...)
     return cov2cor!(C, sqrt.(diag(C)))
 end
 
-function personcov(test::PsychometricTest; corrected::Bool = true)
-    C = cov(response_matrix(test), dims = I; corrected)
+"""
+    personcov(test::PsychometricTest; corrected = false)
+    personcov(test::PsychometricTest, scale::Symbol; corrected = false)
+
+Calculate the person covariance matrix.
+"""
+function personcov(test::PsychometricTest, args...; corrected::Bool = true)
+    responses = response_matrix(test, args...)
+    C = cov(responses, dims = I; corrected)
     return C
 end
 
-function personcor(test::PsychometricTest; corrected::Bool = true)
-    C = personcov(test; corrected)
+"""
+    personcor(test::PsychometricTest; corrected = false)
+    personcor(test::PsychometricTest, scale::Symbol; corrected = false)
+
+Calculate the person correlation matrix.
+"""
+function personcor(test::PsychometricTest, args...; kwargs...)
+    C = personcov(test, args...; kwargs...)
     return cov2cor!(C, sqrt.(diag(C)))
 end
