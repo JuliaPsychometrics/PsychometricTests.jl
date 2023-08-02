@@ -101,11 +101,14 @@ function getresponses(test::PsychometricTest, scale::Symbol)
     return test.responses[I = At(scale_items)]
 end
 
-response_matrix(test::PsychometricTest) = getvalue.(test.responses)
 response_matrix(responses::AbstractArray{<:Response}) = getvalue.(responses)
+response_matrix(test::PsychometricTest) = response_matrix(test.responses)
 
 function response_matrix(test::PsychometricTest, scale::Symbol)
-    return getvalue.(getresponses(test, scale))
+    scale_items = test.scales[scale]
+    responses = getresponses(test)
+    response_values = getvalue.(view(responses, :, scale_items))
+    return response_values
 end
 
 function addscale!(test::PsychometricTest, scale::Pair{Symbol,T}) where {T}
