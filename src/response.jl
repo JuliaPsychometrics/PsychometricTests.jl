@@ -13,6 +13,7 @@ abstract type Response end
 
 Get the response value of `response`.
 """
+getvalue(response) = response
 getvalue(response::Response) = response.value
 
 """

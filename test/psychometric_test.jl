@@ -7,7 +7,7 @@
         @test length(t.items) == 3
         @test length(t.persons) == 10
         @test size(t.responses) == (10, 3)
-        @test eltype(t.responses) == BasicResponse{Int}
+        @test eltype(t.responses) == Int
         @test t.scales == Dict{Symbol,Any}()
 
         scales = Dict(:s1 => 1:2, :s2 => 3)
@@ -21,7 +21,7 @@
         @test length(t.items) == 3
         @test length(t.persons) == 10
         @test size(t.responses) == (10, 3)
-        @test eltype(t.responses) == BasicResponse{Int}
+        @test eltype(t.responses) == Int
         @test t.scales == Dict{Symbol,Any}()
 
         t = PsychometricTest(data; scales)
