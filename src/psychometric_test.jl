@@ -37,8 +37,7 @@ function PsychometricTest(m::AbstractMatrix; scales = nothing)
     items = BasicItem.(item_ids)
     persons = BasicPerson.(person_ids)
 
-    Tr = BasicResponse{eltype(m)}
-    responses = DimArray(Tr.(m), (P(person_ids), I(item_ids)))
+    responses = DimArray(m, (P(person_ids), I(item_ids)))
 
     if isnothing(scales)
         scales = Dict{Symbol,Any}()
@@ -66,12 +65,12 @@ function PsychometricTest(table, item_vars = nothing, id_var = nothing; scales =
     items = BasicItem.(item_ids)
     persons = BasicPerson.(person_ids)
 
-    Tr = BasicResponse{infer_response_type(columns, item_ids)}
-    response_matrix = Matrix{Tr}(undef, length(persons), length(items))
+    T = infer_response_type(columns, item_ids)
+    response_matrix = Matrix{T}(undef, length(persons), length(items))
 
     for (j, item) in enumerate(item_ids)
         col = columns[item]
-        response_matrix[:, j] .= Tr.(col)
+        response_matrix[:, j] .= col
     end
 
     if isnothing(scales)
@@ -102,13 +101,26 @@ function getresponses(test::PsychometricTest, scale::Symbol)
 end
 
 response_matrix(responses::AbstractArray{<:Response}) = getvalue.(responses)
+response_matrix(responses::AbstractArray{<:Real}) = responses
 response_matrix(test::PsychometricTest) = response_matrix(test.responses)
 
-function response_matrix(test::PsychometricTest, scale::Symbol)
+function response_matrix(
+    test::PsychometricTest{Ti,Tp,Tr,Ts},
+    scale::Symbol,
+) where {Ti,Tp,Tr<:AbstractArray{<:Response},Ts}
     scale_items = test.scales[scale]
     responses = getresponses(test)
     response_values = getvalue.(view(responses, :, scale_items))
     return response_values
+end
+
+function response_matrix(
+    test::PsychometricTest{Ti,Tp,Tr,Ts},
+    scale::Symbol,
+) where {Ti,Tp,Tr<:AbstractArray{<:Real},Ts}
+    scale_items = test.scales[scale]
+    responses = getresponses(test)
+    return responses[:, scale_items]
 end
 
 function addscale!(test::PsychometricTest, scale::Pair{Symbol,T}) where {T}
